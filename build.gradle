@@ -37,3 +37,38 @@ test {
     // Use TestNG for unit tests
     useTestNG()
 }
+
+jar {
+    manifest {
+        attributes  'Main-Class': "${project.name}.App"
+    }
+}
+
+task uncompressZip (type: Copy){
+    description 'This task uncompress build file'
+    def zipFile = file("build/distributions/${project.name}.zip")
+    def outputDir = file("${buildDir}/output/zip/")
+    from zipTree(zipFile)
+    into outputDir
+}
+
+task uncompressTar (type: Copy){
+    description 'This task uncompress build file'
+    def tarFile = file("build/distributions/${project.name}.tar")
+    def outputDir = file("${buildDir}/output/tar")
+    from tarTree(tarFile)
+    into outputDir
+}
+
+task runExecuteJarFromFileTar (type: Exec, dependsOn: 'uncompressTar'){
+    def jarFile = "${buildDir}/output/tar/${project.name}/lib/${project.name}.jar"
+    commandLine "bash", "-c", "java -jar ${jarFile}"
+}
+
+task runExecuteJarFromFileZip (type: Exec, dependsOn: 'uncompressZip'){
+    def jarFile = "${buildDir}/output/zip/${project.name}/lib/${project.name}.jar"
+    commandLine "bash", "-c", "java -jar ${jarFile}"
+}
+
+build.finalizedBy(runExecuteJarFromFileZip)
+build.finalizedBy(runExecuteJarFromFileTar)
