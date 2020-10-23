@@ -5,7 +5,7 @@ package sl_java_gradle_project;
 
 public class App {
     public String getGreeting() {
-        return "Hello world.";
+        return "|........Hello world........|";
     }
 
     public static void main(String[] args) {
