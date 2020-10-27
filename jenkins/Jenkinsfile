@@ -12,6 +12,12 @@ pipeline {
                 sh './gradlew clean assemble'
             }
         }
+        stage('Run Task') {
+            steps {
+                echo 'Running..'
+                sh './gradlew tasks runExecuteJarFromFileZip'
+            }
+        }
         stage('Test') {
             steps {
                 echo 'Testing..'
