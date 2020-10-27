@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building..'
+                sh './gradlew clean assemble'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+                sh './gradlew test'
+            },
+            steps {
+                echo 'Building..'
+                sh './gradlew clean build'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
+    }
+}
