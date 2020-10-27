@@ -12,6 +12,12 @@ pipeline {
                 sh './gradlew clean assemble'
             }
         }
+        stage('Run') {
+            steps {
+                echo 'Running..'
+                sh './gradlew run'
+            }
+        }
         stage('Run Task') {
             steps {
                 echo 'Running..'
