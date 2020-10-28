@@ -35,24 +35,6 @@ pipeline {
         }
         stage('Package') {
             steps {
-                echo 'Running..'
-                sh './gradlew tasks runExecuteJarFromFileZip'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-                sh './gradlew test'
-            }
-            post {
-                always {
-                    junit 'build/test-results/test/**/*.xml'
-                    archiveArtifacts 'build/reports/**/*'
-                }
-            }
-        }
-        stage('Package') {
-            steps {
                 sh './gradlew build'
             }
             post {
