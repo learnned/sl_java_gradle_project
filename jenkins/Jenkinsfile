@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+    environment {
+        DB_SERVER = 'sqldev.windows.azure.com'
+        DB_PASSWORD = credentials('db_password')
+    }
+
+    stages {
+        stage('Assemble') {
+            steps {
+                echo 'Assembling..'
+                sh './gradlew clean assemble'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'build/**/*.jar'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+                sh './gradlew test'
+            }
+            post {
+                always {
+                    junit 'build/test-results/test/**/*.xml'
+                    archiveArtifacts 'build/reports/**/*'
+                }
+            }
+        }
+        stage('Package') {
+            steps {
+                sh './gradlew build'
+            }
+            post {
+                always {
+                    archiveArtifacts 'build/distributions/**/*.tar'
+                    archiveArtifacts 'build/distributions/**/*.zip'
+                }
+            }
+        }
+        stage('Uncompress') {
+            steps {
+                sh './gradlew uncompressZip'
+                sh './gradlew uncompressTar'
+            }
+            post {
+                always {
+                    archiveArtifacts 'build/output/**/*'
+                }
+            }
+        }
+        stage('Run') {
+            steps {
+                sh './gradlew run'
+            }
+        }
+    }
+}
