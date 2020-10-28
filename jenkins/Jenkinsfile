@@ -4,21 +4,36 @@ pipeline {
     triggers {
         pollSCM('H/5 * * * *')
     }
+    environment {
+        DB_SERVER = 'sqldev.windows.azure.com'
+        DB_PASSWORD = credentials('db_password')
+    }
 
     stages {
-        stage('Build') {
+        stage('Assemble') {
             steps {
-                echo 'Building..'
+                echo 'Assembling..'
                 sh './gradlew clean assemble'
             }
-        }
-        stage('Run') {
-            steps {
-                echo 'Running..'
-                sh './gradlew run'
+            post {
+                always {
+                    archiveArtifacts artifacts: 'build/**/*.jar'
+                }
             }
         }
-        stage('Run Task') {
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+                sh './gradlew test'
+            }
+            post {
+                always {
+                    junit 'build/test-results/test/**/*.xml'
+                    archiveArtifacts 'build/reports/**/*'
+                }
+            }
+        }
+        stage('Package') {
             steps {
                 echo 'Running..'
                 sh './gradlew tasks runExecuteJarFromFileZip'
@@ -29,10 +44,38 @@ pipeline {
                 echo 'Testing..'
                 sh './gradlew test'
             }
+            post {
+                always {
+                    junit 'build/test-results/test/**/*.xml'
+                    archiveArtifacts 'build/reports/**/*'
+                }
+            }
         }
-        stage('Deploy') {
+        stage('Package') {
             steps {
-                echo 'Deploying....'
+                sh './gradlew build'
+            }
+            post {
+                always {
+                    archiveArtifacts 'build/distributions/**/*.tar'
+                    archiveArtifacts 'build/distributions/**/*.zip'
+                }
+            }
+        }
+        stage('Uncompress') {
+            steps {
+                sh './gradlew uncompressZip'
+                sh './gradlew uncompressTar'
+            }
+            post {
+                always {
+                    archiveArtifacts 'build/output/**/*'
+                }
+            }
+        }
+        stage('Run') {
+            steps {
+                sh './gradlew run'
             }
         }
     }
