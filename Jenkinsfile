@@ -1,18 +1,8 @@
-pipeline {
-    agent any
+#!groovy
 
-    triggers {
-        pollSCM('H/5 * * * *')
-    }
-    stages {
-        stage('Run Pipeline') {
-            parallel {
-                stage('Release') {
-                    steps {
-                        load 'jenkins/Jenkinsfile'
-                    }
-                }
-            }
-        }
+node {
+    stage('Run Pipeline') {
+        checkout scm
+        load 'jenkins/Jenkinsfile'
     }
 }
