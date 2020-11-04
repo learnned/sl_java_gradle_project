@@ -1,0 +1,84 @@
+format_version: 5
+pipelines:
+    gradlew-project:
+      group: Testing
+      materials:
+        repo:
+          git: git@bitbucket.org:sloza/sl_java_gradle_project.git
+          branch: gocd_pipeline
+      stages:
+        - Assemble:
+            jobs:
+              run:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                        - "clean"
+                        - "assemble"
+                artifacts:
+                  - build:
+                      source: build/libs/**/*.jar
+                      destination: assemble
+        - Test:
+            jobs:
+              run:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                        - "test"
+                artifacts:
+                  - test:
+                      source: build/test-results/test/*.xml
+                      destination: xml
+                  - test:
+                      source: build/reports/tests/test/*
+                      destination: html
+        - Package:
+            jobs:
+              package:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                        - "build"
+                artifacts:
+                  - test:
+                      source: build/distributions/**/*.tar
+                      destination: tar
+                  - test:
+                      source: build/distributions/**/*.zip
+                      destination: zip
+        - UncompressZip:
+            jobs:
+              uncompress:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                          - "build"
+                artifacts:
+                  - build:
+                      source: build/output/zip/
+                      destination: uncompressZip
+        - UncompressTar:
+            jobs:
+              uncompress:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                          - "build"
+                artifacts:
+                  - build:
+                      source: build/output/tar/
+                      destination: uncompressTar
+        - Run:
+            jobs:
+              run:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                          - "run"
