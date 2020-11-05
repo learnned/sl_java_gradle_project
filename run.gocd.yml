@@ -1,0 +1,21 @@
+format_version: 5
+pipelines:
+    run:
+      group: run
+      materials:
+        repo:
+          git: git@bitbucket.org:at12-group-01/sl_java_gradle_project.git
+          branch: master
+        mydependency:
+          pipeline: uncompress
+          stage: UncompressTar
+          ignore_for_scheduling: false
+      stages:
+        - Run:
+            jobs:
+              run:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                          - "run"
