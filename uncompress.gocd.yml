@@ -1,0 +1,55 @@
+format_version: 5
+pipelines:
+    uncompress:
+      group: uncompress
+      materials:
+        repo:
+          git: git@bitbucket.org:at12-group-01/sl_java_gradle_project.git
+          branch: master
+        mydependency:
+          pipeline: test
+          stage: Test
+          ignore_for_scheduling: false
+        artifact_assemble:
+          pipeline: assemble
+          stage: Assemble
+          ignore_for_scheduling: false
+      stages:
+        - UncompressZip:
+            jobs:
+              uncompress:
+                tasks:
+                  - fetch:
+                      pipeline: assemble
+                      stage: Assemble
+                      job: run
+                      source: assemble/build/
+                      destination: "./"
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                        - "uncompressZip"
+                artifacts:
+                  - build:
+                      source: build/output/zip/
+                      destination: uncompressZip
+        - UncompressTar:
+            jobs:
+              uncompress:
+                tasks:
+                  - fetch:
+                      run_if: any
+                      artifact_origin: gocd
+                      pipeline: assemble
+                      stage: Assemble
+                      job: run
+                      source: assemble/build/
+                      destination: "./"
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                        - "uncompressTar"
+                artifacts:
+                  - build:
+                      source: build/output/tar/
+                      destination: uncompressTar
