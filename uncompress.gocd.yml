@@ -10,15 +10,25 @@ pipelines:
           pipeline: test
           stage: Test
           ignore_for_scheduling: false
+        artifact_assemble:
+          pipeline: assemble
+          stage: Assemble
+          ignore_for_scheduling: false
       stages:
         - UncompressZip:
             jobs:
               uncompress:
                 tasks:
+                  - fetch:
+                      pipeline: assemble
+                      stage: Assemble
+                      job: run
+                      source: assemble/build/
+                      destination: "./"
                   - exec:
                       command: ./gradlew
                       arguments:
-                        - "uncompressTar"
+                        - "uncompressZip"
                 artifacts:
                   - build:
                       source: build/output/zip/
@@ -27,10 +37,18 @@ pipelines:
             jobs:
               uncompress:
                 tasks:
+                  - fetch:
+                      run_if: any
+                      artifact_origin: gocd
+                      pipeline: assemble
+                      stage: Assemble
+                      job: run
+                      source: assemble/build/
+                      destination: "./"
                   - exec:
                       command: ./gradlew
                       arguments:
-                        - "uncompressZip"
+                        - "uncompressTar"
                 artifacts:
                   - build:
                       source: build/output/tar/
