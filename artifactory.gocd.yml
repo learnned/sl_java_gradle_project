@@ -1,0 +1,28 @@
+format_version: 5
+environments:
+  testing:
+    secure_variables:
+      ARTIFACTORY_USER: "AES:ofoLde/wxL2IfrJoByFVdg==:HTdB1tka0frKemjefoHGYA=="
+      ARTIFACTORY_PASSWORD: "AES:Gw/I9YQg/r0mGuw98TJt7g==:NAuypwEQ7NiC6pMK1Gg9TQ=="
+pipelines:
+    artifactory:
+      group: artifactory
+      materials:
+        repo:
+          git: git@bitbucket.org:at12-group-01/sl_java_gradle_project.git
+          branch: master
+      stages:
+        - artifactory:
+            jobs:
+              publish:
+                tasks:
+                  - exec:
+                      command: ./gradlew
+                      arguments:
+                        - "clean"
+                        - "build"
+                        - "artifactoryPublish"
+                        - "--console"
+                        - "verbose"
+                        - "-P artifactory_user=$ARTIFACTORY_USER"
+                        - "-P artifactory_password=$ARTIFACTORY_PASSWORD"
