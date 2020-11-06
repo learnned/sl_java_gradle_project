@@ -12,7 +12,12 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
+    id 'maven-publish'
+    id 'com.jfrog.artifactory' version "4.15.1"
 }
+
+group = "demo"
+version = "1.0.0"
 
 repositories {
     // Use jcenter for resolving dependencies.
@@ -70,5 +75,44 @@ task runExecuteJarFromFileZip (type: Exec, dependsOn: 'uncompressZip'){
     commandLine "bash", "-c", "java -jar ${jarFile}"
 }
 
-build.finalizedBy(runExecuteJarFromFileZip)
-build.finalizedBy(runExecuteJarFromFileTar)
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'gradle-dev-local'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+            
+        }
+        defaults {
+            publications ('mavenJava')
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'gradle-dev'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+        }
+    }
+}
+
+
+
+
+
+
+
+//build.finalizedBy(runExecuteJarFromFileZip)
+//build.finalizedBy(runExecuteJarFromFileTar)
+
